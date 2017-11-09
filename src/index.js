@@ -29,7 +29,7 @@ function getConfigFromBabel(start, babelrc = '.babelrc') {
     if (start === '/') return [];
 
     const packageJSONPath = path.join(start, 'package.json');
-    const packageJSON = require(packageJSONPath);
+    const packageJSON = require(packageJSONPath); // eslint-disable-line global-require
     const babelConfig = packageJSON.babel;
     if (babelConfig) {
         const pluginConfig = babelConfig.plugins.find(p => (
