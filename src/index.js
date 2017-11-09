@@ -13,6 +13,11 @@ const babelRootImport = require('babel-root-import/build/helper.js');
 const babelRootImportObj = babelRootImport.default ?
     new babelRootImport.default() : babelRootImport;
 
+const defaultConfig = {
+    rootPathSuffix: '',
+    rootPathPrefix: '~'
+};
+
 let {
     hasRootPathPrefixInString,
     transformRelativeToRootPath
@@ -24,6 +29,22 @@ if (babelRootImport.default) {
     transformRelativeToRootPath = transformRelativeToRootPath.bind(babelRootImportObj);
 }
 
+function loadBabelConfig(config = {}) {
+    const pluginConfig = (config.plugins || []).find(p => {
+        if (Array.isArray(p)) {
+            return p[0] === 'babel-plugin-root-import';
+        }
+        return p === 'babel-plugin-root-import';
+    });
+    if (Array.isArray(pluginConfig)) {
+        if (Array.isArray(pluginConfig[1])) {
+            return pluginConfig[1].map(conf => Object.assign({}, defaultConfig, conf));
+        }
+        return [Object.assign({}, defaultConfig, pluginConfig[1])];
+    }
+    return [defaultConfig];
+}
+
 // returns the root import config as an object
 function getConfigFromBabel(start, babelrc = '.babelrc') {
     if (start === '/') return [];
@@ -31,26 +52,23 @@ function getConfigFromBabel(start, babelrc = '.babelrc') {
     const packageJSONPath = path.join(start, 'package.json');
     const packageJSON = require(packageJSONPath); // eslint-disable-line global-require
     const babelConfig = packageJSON.babel;
+
     if (babelConfig) {
-        const pluginConfig = babelConfig.plugins.find(p => (
-            p[0] === 'babel-root-import'
-        ));
+        const pluginConfig = loadBabelConfig(babelConfig);
         process.chdir(path.dirname(packageJSONPath));
-        return pluginConfig[1];
+        return pluginConfig;
     }
 
     const babelrcPath = path.join(start, babelrc);
     if (fs.existsSync(babelrcPath)) {
         const babelrcJson = JSON5.parse(fs.readFileSync(babelrcPath, 'utf8'));
-        if (babelrcJson && Array.isArray(babelrcJson.plugins)) {
-            const pluginConfig = babelrcJson.plugins.find(p => (
-                p[0] === 'babel-plugin-root-import'
-            ));
+        if (babelrcJson) {
+            const pluginConfig = loadBabelConfig(babelrcJson);
             // The src path inside babelrc are from the root so we have
             // to change the working directory for the same directory
             // to make the mapping to work properly
             process.chdir(path.dirname(babelrcPath));
-            return pluginConfig[1];
+            return pluginConfig;
         }
     }
     return getConfigFromBabel(path.dirname(start));
@@ -90,21 +108,6 @@ exports.resolve = (source, file, config, babelrc) => {
                 rootPathPrefix: prefix,
                 rootPathSuffix: suffix
             });
-        });
-    } else {
-        let rootPathPrefix = '~';
-        if (opts.rootPathPrefix && typeof opts.rootPathPrefix === 'string') {
-            rootPathPrefix = opts.rootPathPrefix;
-        }
-
-        let rootPathSuffix = '';
-        if (opts.rootPathSuffix && typeof opts.rootPathSuffix === 'string') {
-            rootPathSuffix = `/${opts.rootPathSuffix.replace(/^(\/)|(\/)$/g, '')}`;
-        }
-
-        rootPathConfig.push({
-            rootPathPrefix,
-            rootPathSuffix
         });
     }
 

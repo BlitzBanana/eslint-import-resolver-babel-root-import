@@ -6,6 +6,6 @@
         "rootPathSuffix": "test/somepath",
         "rootPathPrefix": "@"
       }
-    ],
+    ]
   ]
 }
