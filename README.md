@@ -1,12 +1,14 @@
-# eslint-import-resolver-babel-root-import
+# eslint-import-resolver-babel-root-import-fixed
 
-A [babel-root-import](https://github.com/michaelzoidl/babel-root-import)
+[![NPM](https://nodei.co/npm/eslint-import-resolver-babel-root-import-fixed.png)](https://nodei.co/npm/eslint-import-resolver-babel-root-import-fixed/)
+
+A [babel-plugin-root-import](https://github.com/entwicklerstube/babel-plugin-root-import)
 resolver for [eslint-plugin-import](https://github.com/benmosher/eslint-plugin-import).
 
 ## Installation
 
 ```sh
-npm install --save-dev eslint-plugin-import eslint-import-resolver-babel-root-import
+npm install --save-dev eslint-plugin-import eslint-import-resolver-babel-root-import-fixed
 ```
 
 ## Usage
@@ -14,7 +16,10 @@ npm install --save-dev eslint-plugin-import eslint-import-resolver-babel-root-im
 Inside your `.eslintrc` file, pass this resolver to `eslint-plugin-import`:
 ```
 "settings": {
-  "import/resolver": "babel-plugin-root-import"
+  "import/resolver": {
+    "node": {},
+    "eslint-import-resolver-babel-root-import-fixed": {}
+  }
 }
 ```
 
@@ -25,11 +30,19 @@ your prefix/suffix.
 
 ```json
 {
-  "extends": "airbnb",
-  "rules": {},
-  "settings": {
-    "import/resolver": {
-      "babel-plugin-root-import": {}
+  "xo": {
+    "extends": "prettier",
+    "plugins": ["prettier"],
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "rules": {},
+    "settings": {
+      "import/resolver": {
+        "node": {},
+        "eslint-import-resolver-babel-root-import-fixed": {}
+      }
     }
   }
 }
